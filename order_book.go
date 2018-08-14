@@ -57,6 +57,28 @@ func (o *OrderBook) Add(side Side, price Price, quantity Volume) {
 	selectedSide.Put(price, volume+quantity)
 }
 
+// Update updates a BUY or SELL node (price) volume.
+// If the new volume is higher than 0, then it will be added.
+// If the new volume is lower or equal than zero, the node itself will be removed.
+func (o *OrderBook) Update(side Side, price Price, quantity Volume) {
+	selectedSide := o.selectSide(side)
+
+	var oldVolume Volume
+
+	v, ok := selectedSide.Get(price)
+	if ok {
+		oldVolume = v.(Volume)
+	}
+
+	newVolume := oldVolume + quantity
+
+	if newVolume > Volume(0) {
+		selectedSide.Put(price, newVolume)
+	} else {
+		selectedSide.Remove(price)
+	}
+}
+
 // GetBestBid returns the best (highest) bid and its volume
 func (o *OrderBook) GetBestBid() (Price, Volume) {
 	if o.bids == nil {
