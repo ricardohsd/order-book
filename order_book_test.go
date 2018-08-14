@@ -67,3 +67,27 @@ func TestAdd_IncreaseBidVolume(t *testing.T) {
 		t.Errorf("Values don't match: got %v expected %v", results, expectedResult)
 	}
 }
+func TestBestBidAndAsk(t *testing.T) {
+	orderBook := NewOrderBook(BTC_USD)
+
+	if k, _ := orderBook.GetBestBid(); k != 0 {
+		t.Errorf("Best bid price is invalid. Got %v expected %v", k, 0)
+	}
+
+	if k, _ := orderBook.GetBestAsk(); k != 0 {
+		t.Errorf("Best ask price is invalid. Got %v expected %v", k, 0)
+	}
+
+	orderBook.Add(BUY, Price(999), Volume(100))
+	orderBook.Add(SELL, Price(1051), Volume(200))
+	orderBook.Add(BUY, Price(2000), Volume(50))
+	orderBook.Add(SELL, Price(1050), Volume(200))
+
+	if k, _ := orderBook.GetBestBid(); k != 2000 {
+		t.Errorf("Best bid price is invalid. Got %v expected %v", k, 2000)
+	}
+
+	if k, _ := orderBook.GetBestAsk(); k != 1050 {
+		t.Errorf("Best ask price is invalid. Got %v expected %v", k, 1050)
+	}
+}

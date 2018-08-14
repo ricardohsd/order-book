@@ -57,6 +57,36 @@ func (o *OrderBook) Add(side Side, price Price, quantity Volume) {
 	selectedSide.Put(price, volume+quantity)
 }
 
+// GetBestBid returns the best (highest) bid and its volume
+func (o *OrderBook) GetBestBid() (Price, Volume) {
+	if o.bids == nil {
+		return Price(0), Volume(0)
+	}
+
+	k, v := o.bids.Min()
+
+	if k == nil {
+		return Price(0), Volume(0)
+	}
+
+	return k.(Price), v.(Volume)
+}
+
+// GetBestAsk returns the best (highest) ask and its volume
+func (o *OrderBook) GetBestAsk() (Price, Volume) {
+	if o.asks == nil {
+		return Price(0), Volume(0)
+	}
+
+	k, v := o.asks.Min()
+
+	if k == nil {
+		return Price(0), Volume(0)
+	}
+
+	return k.(Price), v.(Volume)
+}
+
 func (o *OrderBook) selectSide(side Side) *treemap.Map {
 	if side == BUY {
 		return o.bids
