@@ -10,25 +10,54 @@ func TestAdd(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
 
 	assert.Equal(t, Volume(0), orderBook.GetBidSize(Price(999)))
-
 	assert.Equal(t, Volume(0), orderBook.GetAskSize(Price(999)))
 
 	orderBook.Add(BUY, Price(999), Volume(100))
-	orderBook.Add(SELL, Price(1001), Volume(200))
+	orderBook.Add(SELL, Price(1050), Volume(200))
 
-	assert.Equal(t, Volume(100), orderBook.GetBidSize(Price(999)))
-
-	assert.Equal(t, Volume(200), orderBook.GetAskSize(Price(1001)))
-
-	expectedResult := []level{
+	assert.Equal(t, []level{
 		level{
 			bidPrice: 999,
 			bidSize:  100,
-			askPrice: 1001,
+			askPrice: 1050,
 			askSize:  200,
 		},
-	}
-	assert.Equal(t, expectedResult, levels(orderBook))
+	}, levels(orderBook))
+
+	assert.Equal(t, Volume(100), orderBook.GetBidSize(Price(999)))
+	assert.Equal(t, Volume(200), orderBook.GetAskSize(Price(1050)))
+
+	orderBook.Add(BUY, Price(999), Volume(100))
+	orderBook.Add(BUY, Price(999), Volume(200))
+
+	assert.Equal(t, []level{
+		level{
+			bidPrice: 999,
+			bidSize:  400,
+			askPrice: 1050,
+			askSize:  200,
+		},
+	}, levels(orderBook))
+
+	assert.Equal(t, Volume(400), orderBook.GetBidSize(Price(999)))
+
+	orderBook.Add(BUY, Price(1000), Volume(100))
+	orderBook.Add(SELL, Price(1010), Volume(100))
+
+	assert.Equal(t, []level{
+		level{
+			bidPrice: 1000,
+			bidSize:  100,
+			askPrice: 1010,
+			askSize:  100,
+		},
+		level{
+			bidPrice: 999,
+			bidSize:  400,
+			askPrice: 1050,
+			askSize:  200,
+		},
+	}, levels(orderBook))
 }
 func TestAdd_IncreaseBidVolume(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
@@ -39,15 +68,14 @@ func TestAdd_IncreaseBidVolume(t *testing.T) {
 	assert.Equal(t, Volume(300), orderBook.GetBidSize(Price(999)))
 	assert.Equal(t, Volume(0), orderBook.GetAskSize(Price(1001)))
 
-	expectedResult := []level{
+	assert.Equal(t, []level{
 		level{
 			bidPrice: 999,
 			bidSize:  300,
 			askPrice: 0,
 			askSize:  0,
 		},
-	}
-	assert.Equal(t, expectedResult, levels(orderBook))
+	}, levels(orderBook))
 }
 func TestBestBidAndAsk(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
