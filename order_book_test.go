@@ -1,31 +1,24 @@
 package orderbook
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAdd(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
 
-	if bidSize := orderBook.GetBidSize(Price(999)); bidSize != 0 {
-		t.Errorf("BID size should be 0 for an empty orderbook")
-	}
+	assert.Equal(t, Volume(0), orderBook.GetBidSize(Price(999)))
 
-	if askSize := orderBook.GetAskSize(Price(999)); askSize != 0 {
-		t.Errorf("ASK size should be 0 for an empty orderbook")
-	}
+	assert.Equal(t, Volume(0), orderBook.GetAskSize(Price(999)))
 
 	orderBook.Add(BUY, Price(999), Volume(100))
 	orderBook.Add(SELL, Price(1001), Volume(200))
 
-	if bidSize := orderBook.GetBidSize(Price(999)); bidSize != 100 {
-		t.Errorf("BID size is invalid. got %v expected %v", bidSize, 100)
-	}
+	assert.Equal(t, Volume(100), orderBook.GetBidSize(Price(999)))
 
-	if askSize := orderBook.GetAskSize(Price(1001)); askSize != 200 {
-		t.Errorf("ASK size is invalid. got %v expected %v", askSize, 200)
-	}
+	assert.Equal(t, Volume(200), orderBook.GetAskSize(Price(1001)))
 
 	expectedResult := []level{
 		level{
@@ -35,10 +28,7 @@ func TestAdd(t *testing.T) {
 			askSize:  200,
 		},
 	}
-	results := levels(orderBook)
-	if !reflect.DeepEqual(results, expectedResult) {
-		t.Errorf("Values don't match: got %v expected %v", results, expectedResult)
-	}
+	assert.Equal(t, expectedResult, levels(orderBook))
 }
 func TestAdd_IncreaseBidVolume(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
@@ -46,13 +36,8 @@ func TestAdd_IncreaseBidVolume(t *testing.T) {
 	orderBook.Add(BUY, Price(999), Volume(100))
 	orderBook.Add(BUY, Price(999), Volume(200))
 
-	if bidSize := orderBook.GetBidSize(Price(999)); bidSize != 300 {
-		t.Errorf("BID size is invalid. got %v expected %v", bidSize, 300)
-	}
-
-	if askSize := orderBook.GetAskSize(Price(1001)); askSize != 0 {
-		t.Errorf("ASK size is invalid. got %v expected %v", askSize, 0)
-	}
+	assert.Equal(t, Volume(300), orderBook.GetBidSize(Price(999)))
+	assert.Equal(t, Volume(0), orderBook.GetAskSize(Price(1001)))
 
 	expectedResult := []level{
 		level{
@@ -62,32 +47,29 @@ func TestAdd_IncreaseBidVolume(t *testing.T) {
 			askSize:  0,
 		},
 	}
-	results := levels(orderBook)
-	if !reflect.DeepEqual(results, expectedResult) {
-		t.Errorf("Values don't match: got %v expected %v", results, expectedResult)
-	}
+	assert.Equal(t, expectedResult, levels(orderBook))
 }
 func TestBestBidAndAsk(t *testing.T) {
 	orderBook := NewOrderBook(BTC_USD)
 
-	if k, _ := orderBook.GetBestBid(); k != 0 {
-		t.Errorf("Best bid price is invalid. Got %v expected %v", k, 0)
-	}
+	p, v := orderBook.GetBestBid()
+	assert.Equal(t, Price(0), p)
+	assert.Equal(t, Volume(0), v)
 
-	if k, _ := orderBook.GetBestAsk(); k != 0 {
-		t.Errorf("Best ask price is invalid. Got %v expected %v", k, 0)
-	}
+	p, v = orderBook.GetBestAsk()
+	assert.Equal(t, Price(0), p)
+	assert.Equal(t, Volume(0), v)
 
 	orderBook.Add(BUY, Price(999), Volume(100))
 	orderBook.Add(SELL, Price(1051), Volume(200))
 	orderBook.Add(BUY, Price(2000), Volume(50))
 	orderBook.Add(SELL, Price(1050), Volume(200))
 
-	if k, _ := orderBook.GetBestBid(); k != 2000 {
-		t.Errorf("Best bid price is invalid. Got %v expected %v", k, 2000)
-	}
+	p, v = orderBook.GetBestBid()
+	assert.Equal(t, Price(2000), p)
+	assert.Equal(t, Volume(50), v)
 
-	if k, _ := orderBook.GetBestAsk(); k != 1050 {
-		t.Errorf("Best ask price is invalid. Got %v expected %v", k, 1050)
-	}
+	p, v = orderBook.GetBestAsk()
+	assert.Equal(t, Price(1050), p)
+	assert.Equal(t, Volume(200), v)
 }
